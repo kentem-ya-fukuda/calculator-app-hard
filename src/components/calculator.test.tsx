@@ -1,76 +1,175 @@
-import { render, fireEvent, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import Calculator from './calculator';
 import { expect, test } from 'vitest';
 import '@testing-library/jest-dom'; // Jest DOM のカスタムマッチャーをインポート
 
-test('handles input correctly', () => {
+const user = userEvent.setup();
+
+test('Calculatorコンポーネントがレンダリングされること', () => {
   render(<Calculator />);
-  const inputButton = screen.getByLabelText('1 button');
-  fireEvent.click(inputButton);
-  expect(screen.getAllByText('1')).toBeInTheDocument();
+  const inputElement = screen.getByLabelText('input');
+  const buttonElement = screen.getByRole('button', { name: '.' });
+  expect(inputElement).toBeInTheDocument();
+  expect(buttonElement).toBeInTheDocument();
 });
 
-test('performs addition correctly', () => {
+test('加算が正しく行われること', async () => {
   render(<Calculator />);
-  const inputButton = screen.getByLabelText('1 button');
-  const addButton = screen.getByLabelText('+ button');
-  fireEvent.click(inputButton);
-  fireEvent.click(addButton);
-  fireEvent.click(inputButton);
-  fireEvent.click(addButton);
-  expect(screen.getByText('2')).toBeInTheDocument();
+  const inputButton1 = screen.getByRole('button', { name: '1' });
+  const inputButton2 = screen.getByRole('button', { name: '2' });
+  const addButton = screen.getByRole('button', { name: '+' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton1);
+  await user.click(addButton);
+  await user.click(inputButton2);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('3');
 });
 
-test('performs subtraction correctly', () => {
+test('減算が正しく行われること', async () => {
   render(<Calculator />);
-  const inputButton = screen.getByLabelText('1 button');
-  const subtractButton = screen.getByLabelText('- button');
-  fireEvent.click(inputButton);
-  fireEvent.click(subtractButton);
-  fireEvent.click(inputButton);
-  fireEvent.click(subtractButton);
-  expect(screen.getByText('0')).toBeInTheDocument();
+  const inputButton3 = screen.getByRole('button', { name: '3' });
+  const inputButton2 = screen.getByRole('button', { name: '2' });
+  const subtractButton = screen.getByRole('button', { name: '-' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton3);
+  await user.click(subtractButton);
+  await user.click(inputButton2);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('1');
 });
 
-test('performs multiplication correctly', () => {
+test('乗算が正しく行われること', async () => {
   render(<Calculator />);
-  const inputButton = screen.getByLabelText('2 button');
-  const multiplyButton = screen.getByLabelText('* button');
-  fireEvent.click(inputButton);
-  fireEvent.click(multiplyButton);
-  fireEvent.click(inputButton);
-  fireEvent.click(multiplyButton);
-  expect(screen.getByText('4')).toBeInTheDocument();
+  const inputButton4 = screen.getByRole('button', { name: '4' });
+  const inputButton2 = screen.getByRole('button', { name: '2' });
+  const multiplyButton = screen.getByRole('button', { name: '*' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton4);
+  await user.click(multiplyButton);
+  await user.click(inputButton2);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('8');
 });
 
-test('performs division correctly', () => {
+test('除算が正しく行われること', async () => {
   render(<Calculator />);
-  const inputButton = screen.getByLabelText('8 button');
-  const divideButton = screen.getByLabelText('/ button');
-  fireEvent.click(inputButton);
-  fireEvent.click(divideButton);
-  fireEvent.click(inputButton);
-  fireEvent.click(divideButton);
-  expect(screen.getByText('1')).toBeInTheDocument();
+  const inputButton6 = screen.getByRole('button', { name: '6' });
+  const inputButton2 = screen.getByRole('button', { name: '2' });
+  const divideButton = screen.getByRole('button', { name: '/' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton6);
+  await user.click(divideButton);
+  await user.click(inputButton2);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('3');
 });
 
-test('performs calculation correctly', () => {
+test('複数桁の入力が正しく処理されること', async () => {
   render(<Calculator />);
-  const inputButton = screen.getByLabelText('1 button');
-  const addButton = screen.getByLabelText('+ button');
-  const equalsButton = screen.getByLabelText('= button');
-  fireEvent.click(inputButton);
-  fireEvent.click(addButton);
-  fireEvent.click(inputButton);
-  fireEvent.click(equalsButton);
-  expect(screen.getByText('2')).toBeInTheDocument();
+  const inputButton1 = screen.getByRole('button', { name: '1' });
+  const inputButton2 = screen.getByRole('button', { name: '2' });
+  const inputButton3 = screen.getByRole('button', { name: '3' });
+  await user.click(inputButton1);
+  await user.click(inputButton2);
+  await user.click(inputButton3);
+  expect(screen.getByLabelText('input')).toHaveTextContent('123');
 });
 
-test('clears input and result', () => {
+test('小数点の入力が正しく処理されること', async () => {
   render(<Calculator />);
-  const inputButton = screen.getByLabelText('1 button');
-  const clearButton = screen.getByLabelText('clear button');
-  fireEvent.click(inputButton);
-  fireEvent.click(clearButton);
-  expect(screen.getByText('0')).toBeInTheDocument();
+  const inputButton = screen.getByRole('button', { name: '.' });
+  await user.click(inputButton);
+  expect(screen.getByLabelText('input')).toHaveTextContent('0.');
+});
+
+test('連続した計算が正しく行われること', async () => {
+  render(<Calculator />);
+  const inputButton1 = screen.getByRole('button', { name: '1' });
+  const addButton = screen.getByRole('button', { name: '+' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton1);
+  await user.click(addButton);
+  await user.click(inputButton1);
+  await user.click(addButton);
+  await user.click(inputButton1);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('3');
+});
+
+test('ゼロでの除算が正しく処理されること', async () => {
+  render(<Calculator />);
+  const inputButton = screen.getByRole('button', { name: '0' });
+  const divideButton = screen.getByRole('button', { name: '/' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton);
+  await user.click(divideButton);
+  await user.click(inputButton);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('Error');
+});
+
+
+test('クリアボタンが正しく処理されること', async () => {
+  render(<Calculator />);
+  const inputButton1 = screen.getByRole('button', { name: '1' });
+  const addButton = screen.getByRole('button', { name: '+' });
+  const clearButton = screen.getByRole('button', { name: 'clear' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton1);
+  await user.click(addButton);
+  await user.click(inputButton1);
+  await user.click(clearButton);
+  await user.click(inputButton1);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('1');
+});
+
+test('小数点の連続入力が正しく処理されること', async () => {
+  render(<Calculator />);
+  const inputButton = screen.getByRole('button', { name: '.' });
+  await user.click(inputButton);
+  await user.click(inputButton);
+  expect(screen.getByLabelText('input')).toHaveTextContent('0..');
+});
+
+test('計算結果が正しくクリアされること', async () => {
+  render(<Calculator />);
+  const inputButton1 = screen.getByRole('button', { name: '1' });
+  const addButton = screen.getByRole('button', { name: '+' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton1);
+  await user.click(addButton);
+  await user.click(inputButton1);
+  await user.click(equalsButton);
+  const clearButton = screen.getByRole('button', { name: 'clear' });
+  await user.click(clearButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('');
+});
+
+test('ゼロでの乗算が正しく処理されること', async () => {
+  render(<Calculator />);
+  const inputButton = screen.getByRole('button', { name: '0' });
+  const multiplyButton = screen.getByRole('button', { name: '*' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButton);
+  await user.click(multiplyButton);
+  await user.click(inputButton);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('0');
+});
+
+test('負の数の加算が正しく処理されること', async () => {
+  render(<Calculator />);
+  const inputButtonMinus = screen.getByRole('button', { name: '-' });
+  const inputButton1 = screen.getByRole('button', { name: '1' });
+  const addButton = screen.getByRole('button', { name: '+' });
+  const equalsButton = screen.getByRole('button', { name: '=' });
+  await user.click(inputButtonMinus);
+  await user.click(inputButton1);
+  await user.click(addButton);
+  await user.click(inputButton1);
+  await user.click(equalsButton);
+  expect(screen.getByLabelText('result')).toHaveTextContent('0');
 });
